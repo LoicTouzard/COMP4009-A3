@@ -17,11 +17,11 @@ int main(int argc, char *argv[]) {
 
   MPI_Get_processor_name(processor_name, &name_len);
 
-  printf("Hello World!, I am processor with rank %d on node %s.\n",rank,processor_name);
+  printf("Hello Worlld!, I am processor with rank %d on node %s.\n",rank,processor_name);
   fprintf(f, "Hello World!, I am processor with rank %d on node %s.\n",rank,processor_name);
 
   fclose(f);
-    
+
   MPI_Finalize();
   return 0;
 }

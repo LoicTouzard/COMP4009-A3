@@ -1,11 +1,18 @@
 # COMP4009 MPI Assignment3 world makefile
 
-CC = mpicc
+CC = mpic++
 LIBS = -lm
 USER_CFLAGS =  -O $(INCLUDE_DIR)
 
 EXE = assignment3
-MAIN = assignment3.c
+MAIN = assignment3.cpp
+
+# runtime arguments
+P = 4
+N = 10
+K = 12
+M = 4
+FILENAME = input.txt
 
 default: $(EXE)
 
@@ -22,5 +29,5 @@ spread: $(EXE)
 	scp $(EXE) node3:~
 
 run: spread
-	(cd .. & mpirun -np 4 --hostfile ./hostfile $(EXE))
+	(cd ~ & mpirun -np $(P) --hostfile ./hostfile $(EXE) $(N) $(K) $(M) $(FILENAME))
 	

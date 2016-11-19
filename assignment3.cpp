@@ -25,17 +25,22 @@ void printBoard(int** board, int row, int col, char* processor)
 void printAllProcessBoard(int** slice, int row, int col, int rank)
 {
   MPI_Barrier(MPI_COMM_WORLD); // we start when everyone get its matrix ready
-  usleep(rank*10000); // delay to debug in order
+  usleep(rank*100000); // delay to debug in order
   if(rank == 0) cout << endl;
   for (int i = 0; i < row; ++i)
   {
     for (int j = 0; j < col; ++j)
     {
-      cout << board[i][j];
+      cout << slice[i][j];
     }
     cout << endl;
   }
   cout << flush;
+}
+
+void log(int rank, char* msg)
+{
+  cout << "p" << rank << " " << msg << endl;
 }
 
 
@@ -185,7 +190,6 @@ int main(int argc, char *argv[]) {
   {
 
     // top / bottom row sharing
-    if(rank == 0) cout << "Computation of step " << ki << endl;
     int nRequest = (rank == 0 || rank == p-1)?2:4;
     int indexRequest = 0;
     MPI_Request *reqs = new MPI_Request[nRequest];
@@ -204,9 +208,6 @@ int main(int argc, char *argv[]) {
 
     delete[] stats;
     delete[] reqs;
-
-    /*
-
     // compute new slice
     for (int i = 0; i < processSliceSize; ++i)
     {
@@ -214,25 +215,36 @@ int main(int argc, char *argv[]) {
       {
         // analyse of the cell : slice[i][j]
         int sum = 0; // sum of the 3*3 square
-        for (int l = ((j==0)?j:j-1); l <= j+1 && l < N; ++l) // for each existing col of this square
+        for (int l = j-1; l <= j+1; ++l) // for each existing col of this square
         {
+          if(l < 0 || l >= N) continue;// skip out of bounds at left or right columns
           // row before i
-          if(i==0 && rank != 0) sum += topRow[l];
+          if(i==0){
+            if(rank != 0) sum += topRow[l];
+          }
           else sum += slice[i-1][l];
           // row i
           if(l != j) sum += slice[i][l]; // doens't add itself in the sum
           // row after i
-          if(i==(processSliceSize-1) && rank != p-1) sum += bottomRow[l];
+          if(i==(processSliceSize-1)){
+            if(rank != p-1) sum += bottomRow[l];
+          }
           else sum += slice[i+1][l];
         }
         // analyse the sum
         if(sum <= 1) sliceNew[i][j] = 0; // starvation
-        if(sum == 3) sliceNew[i][j] = 1; // birth
-        if(sum >= 4) sliceNew[i][j] = 0; // overpopulation
+        else if(sum == 2) sliceNew[i][j] = slice[i][j]; // stays the same
+        else if(sum == 3) sliceNew[i][j] = 1; // birth
+        else if(sum >= 4) sliceNew[i][j] = 0; // overpopulation
       }
     }
-    
-   
+
+    // new state terminated, switch pointer for new slice to be the current one. and old one to be new considerd as empty
+    int** sliceTmp = slice;
+    slice = sliceNew;
+    sliceNew = sliceTmp;
+  
+   /*
     if(m != 0 && ki != 0 && ki%m == 0){ // log int file condition
       if(rank == 0){
         // master
@@ -245,8 +257,8 @@ int main(int argc, char *argv[]) {
         // slaves
       }
     }
-
     */
+   
     MPI_Barrier(MPI_COMM_WORLD); // we start when everyone get its matrix ready
     printAllProcessBoard(slice, processSliceSize, N, rank);
   }

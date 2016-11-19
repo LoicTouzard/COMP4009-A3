@@ -1,0 +1,33 @@
+Runtimes :
+Results for 100 generations, on 1 processors :
+	Maximum time of a proc :    0.000226021 s
+	Average time of all proc :  0.000226021 s
+	Runtime (maxDuration / p) : 0.000226021 s
+Results for 100 generations, on 2 processors :
+	Maximum time of a proc :    0.0185471 s
+	Average time of all proc :  0.0185035 s
+	Runtime (maxDuration / p) : 0.00927353 s
+Results for 100 generations, on 3 processors :
+	Maximum time of a proc :    0.0306551 s
+	Average time of all proc :  0.0305537 s
+	Runtime (maxDuration / p) : 0.0102184 s
+Results for 100 generations, on 4 processors :
+	Maximum time of a proc :    0.114797 s
+	Average time of all proc :  0.114598 s
+	Runtime (maxDuration / p) : 0.0286992 s
+Results for 100 generations, on 5 processors :
+	Maximum time of a proc :    0.065197 s
+	Average time of all proc :  0.0649414 s
+	Runtime (maxDuration / p) : 0.0130394 s
+Results for 100 generations, on 6 processors :
+	Maximum time of a proc :    0.051821 s
+	Average time of all proc :  0.051565 s
+	Runtime (maxDuration / p) : 0.00863683 s
+Results for 100 generations, on 7 processors :
+	Maximum time of a proc :    0.067595 s
+	Average time of all proc :  0.0672932 s
+	Runtime (maxDuration / p) : 0.00965643 s
+Results for 100 generations, on 8 processors :
+	Maximum time of a proc :    0.0449331 s
+	Average time of all proc :  0.0444449 s
+	Runtime (maxDuration / p) : 0.00561664 s

@@ -66,7 +66,7 @@ int main(int argc, char *argv[]) {
   MPI_Init (&argc, &argv);
   
   double timerStart, timerEnd, duration;
-  timeStart = MPI_Wtime();
+  timerStart = MPI_Wtime();
 
   int N = atoi(argv[1]); // size of the N*N board's matrix
   int k = atoi(argv[2]); // number of evolutionary steps to do
@@ -345,20 +345,19 @@ int main(int argc, char *argv[]) {
   delete[] sliceNew;
 
   timerEnd = MPI_Wtime();
+
   duration = timerEnd - timerStart;
   double maxDuration, avgDuration;
   MPI_Reduce(&duration, &maxDuration, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
   MPI_Reduce(&duration, &avgDuration, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
   avgDuration /= p; // comute the average time
   MPI_Finalize();
-  cout << "Results for " << k << " generations, on " << p << " processors :" << endl;
-  int N = atoi(argv[1]); // size of the N*N board's matrix
-  int k = atoi(argv[2]); // number of evolutionary steps to do
-  int m = atoi(argv[3]); // m output state in a file each m step
-  char* FILENAME= argv[4]; // output file name
-  cout << "\tMaximum time of a proc :    " << maxDuration << "s" << endl;
-  cout << "\tAverage time of all proc :  " << avgDuration << "s" << endl;
-  cout << "\tRuntime (maxDuration / p) : " << maxDuration/p << "s" << endl;
+  if(rank == 0){
+    cout << "Results for " << k << " generations, on " << p << " processors :" << endl;
+    cout << "\tMaximum time of a proc :    " << maxDuration << " s" << endl;
+    cout << "\tAverage time of all proc :  " << avgDuration << " s" << endl;
+    cout << "\tRuntime (maxDuration / p) : " << maxDuration/p << " s" << endl;
+  }
 
 
   return EXIT_SUCCESS;

@@ -33,14 +33,14 @@ run: spread
 
 runtest: spread
 	echo "Runtimes :" > runtimes.txt;
-	mpirun -np 1 --hostfile ./hostfile $(EXE) 10 1 0 assignment-3-test-files/test\ 1\ input.txt >> runtimes.txt
-	mpirun -np 2 --hostfile ./hostfile $(EXE) 10 2 0 assignment-3-test-files/test\ 1\ input.txt >> runtimes.txt
-	mpirun -np 3 --hostfile ./hostfile $(EXE) 10 3 0 assignment-3-test-files/test\ 1\ input.txt >> runtimes.txt
-	mpirun -np 4 --hostfile ./hostfile $(EXE) 10 4 0 assignment-3-test-files/test\ 1\ input.txt >> runtimes.txt
-	mpirun -np 5 --hostfile ./hostfile $(EXE) 10 5 0 assignment-3-test-files/test\ 1\ input.txt >> runtimes.txt
-	mpirun -np 6 --hostfile ./hostfile $(EXE) 10 6 0 assignment-3-test-files/test\ 1\ input.txt >> runtimes.txt
-	mpirun -np 7 --hostfile ./hostfile $(EXE) 10 7 0 assignment-3-test-files/test\ 1\ input.txt >> runtimes.txt
-	mpirun -np 8 --hostfile ./hostfile $(EXE) 10 8 0 assignment-3-test-files/test\ 1\ input.txt >> runtimes.txt
+	mpirun -np 1 --hostfile ./hostfile $(EXE) 10 100 0 assignment-3-test-files/test\ 1\ input.txt >> runtimes.txt
+	mpirun -np 2 --hostfile ./hostfile $(EXE) 10 100 0 assignment-3-test-files/test\ 1\ input.txt >> runtimes.txt
+	mpirun -np 3 --hostfile ./hostfile $(EXE) 10 100 0 assignment-3-test-files/test\ 1\ input.txt >> runtimes.txt
+	mpirun -np 4 --hostfile ./hostfile $(EXE) 10 100 0 assignment-3-test-files/test\ 1\ input.txt >> runtimes.txt
+	mpirun -np 5 --hostfile ./hostfile $(EXE) 10 100 0 assignment-3-test-files/test\ 1\ input.txt >> runtimes.txt
+	mpirun -np 6 --hostfile ./hostfile $(EXE) 10 100 0 assignment-3-test-files/test\ 1\ input.txt >> runtimes.txt
+	mpirun -np 7 --hostfile ./hostfile $(EXE) 10 100 0 assignment-3-test-files/test\ 1\ input.txt >> runtimes.txt
+	mpirun -np 8 --hostfile ./hostfile $(EXE) 10 100 0 assignment-3-test-files/test\ 1\ input.txt >> runtimes.txt
 
 
 	

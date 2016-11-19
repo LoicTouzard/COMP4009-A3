@@ -16,5 +16,11 @@ To run the programm use the command : `mpirun -np P --hostfile ./hostfile assign
 * m output state in a file each mth step (m = 0 no output in file)
 * FILENAME inputinput file name  
 
+Fill the `hostfile` with the machines you want MPI to run.  
 You can use directly the command `make run` to use the default values : `P=4`, `N=10`, `K=12`, `M=4`, `FILENAME=input.txt`. Be careful though, it will execute the `make spread` before. Change it or delete the `spread` dependancy in `run`.  
 You can run the test and output the runtimes in the fle runtimes.txt with the command `make runtest`. Same remark as before about the `spread` dependancy.
+
+
+## Run the tests
+Use the command `make runtest` it will output the tests in two files : `runtimes.txt` and `testsOutput.txt`.  
+Once more it is dependant on `spread` part in the Makefile. be sure to have it set correctly.

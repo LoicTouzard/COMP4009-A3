@@ -65,10 +65,13 @@ int main(int argc, char *argv[]) {
   ////////////////////
   MPI_Init (&argc, &argv);
   
+  double timerStart, timerEnd, duration;
+  timeStart = MPI_Wtime();
+
   int N = atoi(argv[1]); // size of the N*N board's matrix
   int k = atoi(argv[2]); // number of evolutionary steps to do
   int m = atoi(argv[3]); // m output state in a file each m step
-  char* FILENAME= argv[4]; // output file name
+  char* FILENAME= argv[4]; // input file name
 
   int rank; // rank of current process
   int p; // number of process
@@ -223,7 +226,7 @@ int main(int argc, char *argv[]) {
       for (int j = 0; j < N; ++j)
       {
         // analyse of the cell : slice[i][j]
-        int sum = 0; // sum of the 3*3 square
+        int sum = 0; // sum of the 3*3 square around the cell
         for (int l = j-1; l <= j+1; ++l) // for each existing col of this square
         {
           if(l < 0 || l >= N) continue;// skip out of bounds at left or right columns
@@ -341,6 +344,22 @@ int main(int argc, char *argv[]) {
   delete[] slice;
   delete[] sliceNew;
 
+  timerEnd = MPI_Wtime();
+  duration = timerEnd - timerStart;
+  double maxDuration, avgDuration;
+  MPI_Reduce(&duration, &maxDuration, 1, MPI_DOUBLE, MPI_MAX, 0, MPI_COMM_WORLD);
+  MPI_Reduce(&duration, &avgDuration, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+  avgDuration /= p; // comute the average time
   MPI_Finalize();
+  cout << "Results for " << k << " generations, on " << p << " processors :" << endl;
+  int N = atoi(argv[1]); // size of the N*N board's matrix
+  int k = atoi(argv[2]); // number of evolutionary steps to do
+  int m = atoi(argv[3]); // m output state in a file each m step
+  char* FILENAME= argv[4]; // output file name
+  cout << "\tMaximum time of a proc :    " << maxDuration << "s" << endl;
+  cout << "\tAverage time of all proc :  " << avgDuration << "s" << endl;
+  cout << "\tRuntime (maxDuration / p) : " << maxDuration/p << "s" << endl;
+
+
   return EXIT_SUCCESS;
 }

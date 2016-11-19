@@ -21,6 +21,23 @@ void printBoard(int** board, int row, int col, char* processor)
   cout << flush;
 }
 
+// warning code should be reachable for all process, it has a barrier
+void printAllProcessBoard(int** slice, int row, int col, int rank)
+{
+  MPI_Barrier(MPI_COMM_WORLD); // we start when everyone get its matrix ready
+  usleep(rank*10000); // delay to debug in order
+  if(rank == 0) cout << endl;
+  for (int i = 0; i < row; ++i)
+  {
+    for (int j = 0; j < col; ++j)
+    {
+      cout << board[i][j];
+    }
+    cout << endl;
+  }
+  cout << flush;
+}
+
 
 // ./assignment3 N k m FILENAME
 // N size of the N*N matrix
@@ -88,7 +105,6 @@ int main(int argc, char *argv[]) {
     }
     delete[] line;
     fclose(inputFile);
-    //printBoard(board, N, N, "BOARD");
 
 
     /** SLICING **/    
@@ -118,7 +134,6 @@ int main(int argc, char *argv[]) {
       while(rowCounter < masterSliceSize+pRank*normalSliceSize)
       {
         MPI_Isend(board[rowCounter], N, MPI_INT, pRank, TAG_SLICE_INIT, MPI_COMM_WORLD, reqs+indexRequest);
-        //MPI_Send(board[rowCounter], N, MPI_INT, pRank, TAG_SLICE_INIT, MPI_COMM_WORLD);//, &reqs[indexRequest++]);
         ++rowCounter;
         ++indexRequest;
       }
@@ -148,10 +163,8 @@ int main(int argc, char *argv[]) {
   }
 
   // common to all process code
-  MPI_Barrier(MPI_COMM_WORLD); // we start when everyone get its matrix ready
-  usleep(rank*10000); // delay to debug in order
-  printBoard(slice, processSliceSize, N, processor_name);
-  MPI_Barrier(MPI_COMM_WORLD); // we start when everyone get its matrix ready
+  MPI_Barrier(MPI_COMM_WORLD); // we start when everyone get its matrix ready may not be needed
+  printAllProcessBoard(slice, processSliceSize, N, rank);
 
 
   // simulation variable
@@ -170,11 +183,8 @@ int main(int argc, char *argv[]) {
   // simulation loop
   for (int ki = 0; ki < 1; ++ki)
   {
-    // MPI_Isend(board[ro, N, MPI_INT, pRank, TAG_SLICE_INIT, MPI_COMM_WORLD, reqs+indexRequest);
-    // MPI_Irecv(slice[i], N, MPI_INT, 0, TAG_SLICE_INIT, MPI_COMM_WORLD, reqs+indexRequest);
 
-
-    // row trades
+    // top / bottom row sharing
     if(rank == 0) cout << "Computation of step " << ki << endl;
     int nRequest = (rank == 0 || rank == p-1)?2:4;
     int indexRequest = 0;
@@ -192,40 +202,6 @@ int main(int argc, char *argv[]) {
     }
     MPI_Waitall(nRequest, reqs, stats);
 
-    usleep(rank*10000); // delay to debug in order
-    if(rank != 0) printBoard(&topRow, 1, N, processor_name);
-    if(rank != p-1) printBoard(&bottomRow, 1, N, processor_name);
-    MPI_Barrier(MPI_COMM_WORLD); // we start when everyone get its matrix ready
-    /*
-    if(rank%2 == 1){// changing tasks order for synchronization and prevent deadlocks
-      // receive topRow
-      if(rank != 0) MPI_Recv(topRow, N, MPI_INT, topNeighbour, TAG_TOP_SLICE, MPI_COMM_WORLD, stats);
-      if(rank != 0) cout << processor_name << " recv top" << flush << endl;
-      // send topRow
-      if(rank != 0) MPI_Send(slice[0], N, MPI_INT, topNeighbour, TAG_BOTTOM_SLICE, MPI_COMM_WORLD); // receiver's bottom
-      if(rank != 0) cout << processor_name << " send top" << flush << endl;
-      // receive bottom row
-      if(rank != p-1) MPI_Recv(bottomRow, N, MPI_INT, bottomNeighbour, TAG_BOTTOM_SLICE, MPI_COMM_WORLD, stats);
-      if(rank != p-1) cout << processor_name << " recv bot" << flush << endl;
-      // send bottom row
-      if(rank != p-1) MPI_Send(slice[processSliceSize-1], N, MPI_INT, topNeighbour, TAG_TOP_SLICE, MPI_COMM_WORLD); // receiver's top
-      if(rank != p-1) cout << processor_name << " send bot" << flush << endl;
-    }
-    else{ // use of symetric order
-      // send bottom row
-      if(rank != p-1) MPI_Send(slice[processSliceSize-1], N, MPI_INT, topNeighbour, TAG_TOP_SLICE, MPI_COMM_WORLD); // receiver's top
-      if(rank != p-1) cout << processor_name << " send bot" << flush << endl;
-      // receive bottom row
-      if(rank != p-1) MPI_Recv(bottomRow, N, MPI_INT, bottomNeighbour, TAG_BOTTOM_SLICE, MPI_COMM_WORLD, stats);
-      if(rank != p-1) cout << processor_name << " recv bot" << flush << endl;
-      // send topRow
-      if(rank != 0) MPI_Send(slice[0], N, MPI_INT, topNeighbour, TAG_BOTTOM_SLICE, MPI_COMM_WORLD); // receiver's bottom
-      if(rank != 0) cout << processor_name << " send top" << flush << endl;
-      // receive topRow
-      if(rank != 0) MPI_Recv(topRow, N, MPI_INT, topNeighbour, TAG_TOP_SLICE, MPI_COMM_WORLD, stats);
-      if(rank != 0) cout << processor_name << " recv top" << flush << endl;
-    }
-    */
     delete[] stats;
     delete[] reqs;
 
@@ -272,7 +248,7 @@ int main(int argc, char *argv[]) {
 
     */
     MPI_Barrier(MPI_COMM_WORLD); // we start when everyone get its matrix ready
-
+    printAllProcessBoard(slice, processSliceSize, N, rank);
   }
 
 

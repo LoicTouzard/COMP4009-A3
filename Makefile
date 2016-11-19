@@ -10,8 +10,8 @@ MAIN = assignment3.cpp
 # runtime arguments
 P = 4
 N = 10
-K = 12
-M = 4
+K = 10
+M = 10
 FILENAME = input.txt
 
 default: $(EXE)
@@ -29,5 +29,11 @@ spread: $(EXE)
 	scp $(EXE) node3:~
 
 run: spread
-	(cd ~ & mpirun -np $(P) --hostfile ./hostfile $(EXE) $(N) $(K) $(M) $(FILENAME))
+	mpirun -np $(P) --hostfile ./hostfile $(EXE) $(N) $(K) $(M) $(FILENAME)
+
+runtest: spread
+	mpirun -np $(P) --hostfile ./hostfile $(EXE) $(N) $(K) $(M) $(FILENAME)
+	mpirun -np $(P) --hostfile ./hostfile $(EXE) $(N) $(K) $(M) $(FILENAME)
+	mpirun -np $(P) --hostfile ./hostfile $(EXE) $(N) $(K) $(M) $(FILENAME)
+
 	

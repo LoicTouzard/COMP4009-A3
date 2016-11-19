@@ -1,7 +1,10 @@
 #include "mpi.h"
 #include <stdio.h>
+#include <string>
 #include <stdlib.h>
-#include <vector>
+#include <iostream>
+#include <fstream>
+#include <sstream>
 #include <unistd.h>
 
 using namespace std;
@@ -57,7 +60,9 @@ int main(int argc, char *argv[]) {
     return EXIT_FAILURE;
   }
 
-  //initialization
+  ////////////////////
+  // initialization //
+  ////////////////////
   MPI_Init (&argc, &argv);
   
   int N = atoi(argv[1]); // size of the N*N board's matrix
@@ -74,17 +79,19 @@ int main(int argc, char *argv[]) {
   MPI_Comm_size(MPI_COMM_WORLD, &p);
   MPI_Get_processor_name(processor_name, &name_len);
   // tags
-  int TAG_SLICE_INIT = 1, TAG_TOP_SLICE = 2, TAG_BOTTOM_SLICE = 3;
+  int TAG_SLICE_INIT = 1, TAG_TOP_SLICE = 2, TAG_BOTTOM_SLICE = 4, TAG_LOG_SLICE = 8;
 
   int **board = NULL; // NxN
   int **slice, **sliceNew = NULL; // NxN/p  ; sliceNew is the result after computation
-  int normalSliceSize = N/p; // size of one slice
+  int slaveSliceSize = N/p; // size of one slice
   int masterSliceSize = N-(N/p)*(p-1); // N = (p-1)*(N/P) + masterSliceSize   (to handle size not multiple of p)
-  int processSliceSize = (rank==0)?masterSliceSize:normalSliceSize;
+  int processSliceSize = (rank==0)?masterSliceSize:slaveSliceSize;
 
   if(rank == 0) // master
   {
-    /** READ AND BUILT BOARD */
+    //////////////////////////
+    // READ AND BUILT BOARD //
+    //////////////////////////
 
     // open the input file
     FILE* inputFile = fopen(FILENAME, "r"); // open the file and store the pointer
@@ -112,7 +119,9 @@ int main(int argc, char *argv[]) {
     fclose(inputFile);
 
 
-    /** SLICING **/    
+    /////////////
+    // SLICING //
+    /////////////
 
     // slice for itself, master.
     slice = new int*[masterSliceSize];
@@ -136,7 +145,7 @@ int main(int argc, char *argv[]) {
     for (int pRank = 1; pRank < p; ++pRank)
     {
       // send via MPI the slices to each process
-      while(rowCounter < masterSliceSize+pRank*normalSliceSize)
+      while(rowCounter < masterSliceSize+pRank*slaveSliceSize)
       {
         MPI_Isend(board[rowCounter], N, MPI_INT, pRank, TAG_SLICE_INIT, MPI_COMM_WORLD, reqs+indexRequest);
         ++rowCounter;
@@ -169,7 +178,7 @@ int main(int argc, char *argv[]) {
 
   // common to all process code
   MPI_Barrier(MPI_COMM_WORLD); // we start when everyone get its matrix ready may not be needed
-  printAllProcessBoard(slice, processSliceSize, N, rank);
+  //printAllProcessBoard(slice, processSliceSize, N, rank);
 
 
   // simulation variable
@@ -186,7 +195,7 @@ int main(int argc, char *argv[]) {
   }
   
   // simulation loop
-  for (int ki = 0; ki < 1; ++ki)
+  for (int ki = 1; ki <= k; ++ki)
   {
 
     // top / bottom row sharing
@@ -244,23 +253,71 @@ int main(int argc, char *argv[]) {
     slice = sliceNew;
     sliceNew = sliceTmp;
   
-   /*
-    if(m != 0 && ki != 0 && ki%m == 0){ // log int file condition
+    MPI_Barrier(MPI_COMM_WORLD); // Simulation step synchronisazation between processes
+ 
+    if(m != 0 && ki != 0 && ki%m == 0){ // log int file condition every mth step, but not for 0
       if(rank == 0){
-        // master
-        for (int i = 1; i < p; ++i)
+        // master receive and store all the slices from slaves
+        int indexRequest = 0;
+        int nRequest = (p-1)*slaveSliceSize;
+        MPI_Request *reqs = new MPI_Request[nRequest];
+        MPI_Status *stats = new MPI_Status[nRequest];
+        for (int pRank = 1; pRank < p; ++pRank)
         {
           // receive and update the board
+          for (int i = 0; i < slaveSliceSize; ++i)
+          {
+            MPI_Irecv(board[processSliceSize+indexRequest], N, MPI_INT, pRank, TAG_LOG_SLICE, MPI_COMM_WORLD, reqs+indexRequest);
+            ++indexRequest;
+          }
         }
+
+        // add master own slice into board
+        for (int i = 0; i < processSliceSize; ++i)
+        {
+          for (int j = 0; j < N; ++j)
+          {
+            board[i][j] = slice[i][j];
+          }
+        }
+
+        MPI_Waitall(nRequest, reqs, stats);
+        delete[] reqs;
+        delete[] stats;
+
+        // print into file
+        //printBoard(board, N, N, processor_name);
+
+        stringstream ss;
+        ss << "output" << ki << ".txt";
+        string outputFilename = ss.str();
+        ofstream outputFile;
+        outputFile.open(outputFilename.c_str(), ios::out | ios::trunc);
+        for (int i = 0; i < N; ++i)
+        {
+          for (int j = 0; j < N; ++j)
+          {
+            outputFile << board[i][j];
+          }
+          outputFile << endl;
+        }
+        outputFile.close();
       }
       else{
         // slaves
+        MPI_Request *reqs = new MPI_Request[processSliceSize];
+        MPI_Status *stats = new MPI_Status[processSliceSize];
+
+        for (int i = 0; i < processSliceSize; ++i)
+        {
+          MPI_Isend(slice[i], N, MPI_INT, 0, TAG_LOG_SLICE, MPI_COMM_WORLD, reqs+i);
+        }
+
+        MPI_Waitall(processSliceSize, reqs, stats);
+        delete[] reqs;
+        delete[] stats;
       }
     }
-    */
-   
-    MPI_Barrier(MPI_COMM_WORLD); // we start when everyone get its matrix ready
-    printAllProcessBoard(slice, processSliceSize, N, rank);
   }
 
 

@@ -7,7 +7,7 @@ USER_CFLAGS =  -O $(INCLUDE_DIR)
 EXE = assignment3
 MAIN = assignment3.cpp
 
-# runtime arguments
+# runtime default arguments
 P = 4
 N = 10
 K = 12
@@ -43,13 +43,13 @@ runtest: spread
 	mpirun -np 8 --hostfile ./hostfile $(EXE) 10 100 0 assignment-3-test-files/test\ 1\ input.txt >> runtimes.txt
 	echo "Test output :" > testsOutput.txt
 	echo "Output for test 1, 10 iterations" >> testsOutput.txt
-	mpirun -np 4 --hostfile ./hostfile $(EXE) 10 10 10 assignment-3-test-files/test\ 1\ input.txt
+	mpirun -np 4 --hostfile ./hostfile $(EXE) 10 10 10 assignment-3-test-files/test\ 1\ input.txt > /dev/null
 	cat output10.txt >> testsOutput.txt
 	echo "Output for test 2, 10 iterations" >> testsOutput.txt
-	mpirun -np 4 --hostfile ./hostfile $(EXE) 20 10 10 assignment-3-test-files/test\ 2\ input.txt
+	mpirun -np 4 --hostfile ./hostfile $(EXE) 20 10 10 assignment-3-test-files/test\ 2\ input.txt > /dev/null
 	cat output10.txt >> testsOutput.txt
 	echo "Output for test 3, 10 iterations" >> testsOutput.txt
-	mpirun -np 4 --hostfile ./hostfile $(EXE) 20 10 10 assignment-3-test-files/test\ 3\ input.txt
+	mpirun -np 4 --hostfile ./hostfile $(EXE) 20 10 10 assignment-3-test-files/test\ 3\ input.txt > /dev/null
 	cat output10.txt >> testsOutput.txt
 
 

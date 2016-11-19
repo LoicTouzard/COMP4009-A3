@@ -155,7 +155,7 @@ int main(int argc, char *argv[]) {
         ++indexRequest;
       }
     }
-    MPI_Waitall(nRequest, reqs, stats);
+    if(indexRequest != 0) MPI_Waitall(nRequest, reqs, stats);
     delete[] reqs;
     delete[] stats;
   }
@@ -216,7 +216,7 @@ int main(int argc, char *argv[]) {
       MPI_Irecv(bottomRow, N, MPI_INT, bottomNeighbour, TAG_BOTTOM_SLICE, MPI_COMM_WORLD, reqs+indexRequest+1);
       indexRequest += 2;
     }
-    MPI_Waitall(nRequest, reqs, stats);
+    if(indexRequest != 0) MPI_Waitall(nRequest, reqs, stats);
 
     delete[] stats;
     delete[] reqs;
@@ -284,7 +284,7 @@ int main(int argc, char *argv[]) {
           }
         }
 
-        MPI_Waitall(nRequest, reqs, stats);
+        if(indexRequest != 0) MPI_Waitall(nRequest, reqs, stats);
         delete[] reqs;
         delete[] stats;
 
